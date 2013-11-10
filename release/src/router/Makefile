@@ -343,6 +343,7 @@ obj-$(RTCONFIG_SSH) += dropbear
 obj-$(RTCONFIG_LZO) += lzo
 obj-$(RTCONFIG_OPENVPN) += openpam
 obj-$(RTCONFIG_OPENVPN) += openvpn
+obj-$(RTCONFIG_IPSEC) += strongswan
 
 obj-$(CONFIG_LINUX26) += hotplug2
 obj-$(CONFIG_LINUX26) += udev
@@ -2485,6 +2486,112 @@ openvpn-install: openvpn
 	$(STRIP) -s $(INSTALLDIR)/openvpn/usr/lib/openvpn-plugin-auth-pam.so
 	@mkdir -p $(TARGETDIR)/rom/easy-rsa
 	install openvpn/easy-rsa/2.0/* $(TARGETDIR)/rom/easy-rsa
+
+strongswan/stamp-h1:
+	cd strongswan && \
+	$(CONFIGURE) --prefix=/usr --sysconfdir=/etc \
+	--libexecdir=/usr/lib --with-ipsecdir=/usr/lib/strongswan \
+	--disable-gmp --disable-dnskey \
+	--disable-xauth-generic --enable-kernel-libipsec \
+	--enable-libipsec --disable-static \
+	--enable-silent-rules
+	touch $@
+
+strongswan: strongswan/stamp-h1
+
+strongswan-clean:
+	-@$(MAKE) -C strongswan clean
+	$(RM) strongswan/stamp-h1
+
+strongswan-install: strongswan
+	install -D strongswan/src/pki/.libs/pki $(INSTALLDIR)/strongswan/usr/bin/pki
+	install -D strongswan/src/ipsec/_ipsec $(INSTALLDIR)/strongswan/usr/sbin/ipsec
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/bin/pki
+
+	install -D strongswan/src/charon/.libs/charon $(INSTALLDIR)/strongswan/usr/lib/strongswan/charon
+	install -D strongswan/src/_copyright/.libs/_copyright $(INSTALLDIR)/strongswan/usr/lib/strongswan/_copyright
+	install -D strongswan/src/openac/.libs/openac $(INSTALLDIR)/strongswan/usr/lib/strongswan/openac
+	install -D strongswan/src/scepclient/.libs/scepclient $(INSTALLDIR)/strongswan/usr/lib/strongswan/scepclient
+	install -D strongswan/src/starter/.libs/starter $(INSTALLDIR)/strongswan/usr/lib/strongswan/starter
+	install -D strongswan/src/stroke/.libs/stroke $(INSTALLDIR)/strongswan/usr/lib/strongswan/stroke
+	install -D strongswan/src/_updown/_updown $(INSTALLDIR)/strongswan/usr/lib/strongswan/_updown
+	install -D strongswan/src/_updown_espmark/_updown_espmark $(INSTALLDIR)/strongswan/usr/lib/strongswan/_updown_espmark
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/strongswan/charon
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/strongswan/_copyright
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/strongswan/openac
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/strongswan/scepclient
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/strongswan/starter
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/strongswan/stroke
+
+	install -D strongswan/src/libcharon/.libs/libcharon.so.0.0.0 $(INSTALLDIR)/strongswan/usr/lib/ipsec/libcharon.so.0
+	install -D strongswan/src/libstrongswan/.libs/libstrongswan.so.0.0.0 $(INSTALLDIR)/strongswan/usr/lib/ipsec/libstrongswan.so.0
+	install -D strongswan/src/libhydra/.libs/libhydra.so.0.0.0 $(INSTALLDIR)/strongswan/usr/lib/ipsec/libhydra.so.0
+	install -D strongswan/src/libipsec/.libs/libipsec.so.0.0.0 $(INSTALLDIR)/strongswan/usr/lib/ipsec/libipsec.so.0
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/libcharon.so.0
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/libstrongswan.so.0
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/libhydra.so.0
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/libipsec.so.0
+
+	install -D strongswan/src/libstrongswan/plugins/aes/.libs/libstrongswan-aes.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-aes.so
+	install -D strongswan/src/libhydra/plugins/attr/.libs/libstrongswan-attr.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-attr.so
+	install -D strongswan/src/libstrongswan/plugins/cmac/.libs/libstrongswan-cmac.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-cmac.so
+	install -D strongswan/src/libstrongswan/plugins/constraints/.libs/libstrongswan-constraints.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-constraints.so
+	install -D strongswan/src/libstrongswan/plugins/des/.libs/libstrongswan-des.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-des.so
+	install -D strongswan/src/libstrongswan/plugins/fips_prf/.libs/libstrongswan-fips-prf.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-fips-prf.so
+	install -D strongswan/src/libstrongswan/plugins/hmac/.libs/libstrongswan-hmac.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-hmac.so
+	install -D strongswan/src/libcharon/plugins/kernel_libipsec/.libs/libstrongswan-kernel-libipsec.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-kernel-libipsec.so
+	install -D strongswan/src/libhydra/plugins/kernel_netlink/.libs/libstrongswan-kernel-netlink.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-kernel-netlink.so
+	install -D strongswan/src/libstrongswan/plugins/md5/.libs/libstrongswan-md5.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-md5.so
+	install -D strongswan/src/libstrongswan/plugins/nonce/.libs/libstrongswan-nonce.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-nonce.so
+	install -D strongswan/src/libstrongswan/plugins/pem/.libs/libstrongswan-pem.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-pem.so
+	install -D strongswan/src/libstrongswan/plugins/pgp/.libs/libstrongswan-pgp.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-pgp.so
+	install -D strongswan/src/libstrongswan/plugins/pkcs12/.libs/libstrongswan-pkcs12.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-pkcs12.so
+	install -D strongswan/src/libstrongswan/plugins/pkcs1/.libs/libstrongswan-pkcs1.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-pkcs1.so
+	install -D strongswan/src/libstrongswan/plugins/pkcs7/.libs/libstrongswan-pkcs7.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-pkcs7.so
+	install -D strongswan/src/libstrongswan/plugins/pkcs8/.libs/libstrongswan-pkcs8.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-pkcs8.so
+	install -D strongswan/src/libstrongswan/plugins/pubkey/.libs/libstrongswan-pubkey.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-pubkey.so
+	install -D strongswan/src/libstrongswan/plugins/random/.libs/libstrongswan-random.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-random.so
+	install -D strongswan/src/libstrongswan/plugins/rc2/.libs/libstrongswan-rc2.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-rc2.so
+	install -D strongswan/src/libhydra/plugins/resolve/.libs/libstrongswan-resolve.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-resolve.so
+	install -D strongswan/src/libstrongswan/plugins/revocation/.libs/libstrongswan-revocation.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-revocation.so
+	install -D strongswan/src/libstrongswan/plugins/sha1/.libs/libstrongswan-sha1.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-sha1.so
+	install -D strongswan/src/libstrongswan/plugins/sha2/.libs/libstrongswan-sha2.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-sha2.so
+	install -D strongswan/src/libcharon/plugins/socket_default/.libs/libstrongswan-socket-default.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-socket-default.so
+	install -D strongswan/src/libstrongswan/plugins/sshkey/.libs/libstrongswan-sshkey.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-sshkey.so
+	install -D strongswan/src/libcharon/plugins/stroke/.libs/libstrongswan-stroke.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-stroke.so
+	install -D strongswan/src/libcharon/plugins/updown/.libs/libstrongswan-updown.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-updown.so
+	install -D strongswan/src/libstrongswan/plugins/x509/.libs/libstrongswan-x509.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-x509.so
+	install -D strongswan/src/libstrongswan/plugins/xcbc/.libs/libstrongswan-xcbc.so $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-xcbc.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-aes.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-attr.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-cmac.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-constraints.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-des.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-fips-prf.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-hmac.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-kernel-libipsec.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-kernel-netlink.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-md5.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-nonce.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-pem.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-pgp.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-pkcs12.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-pkcs1.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-pkcs7.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-pkcs8.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-pubkey.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-random.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-rc2.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-resolve.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-revocation.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-sha1.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-sha2.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-socket-default.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-sshkey.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-stroke.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-updown.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-x509.so
+	$(STRIP) -s $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/libstrongswan-xcbc.so
 
 sdparm-1.02/stamp-h1:
 	cd $(TOP)/sdparm-1.02 && $(CONFIGURE) --prefix=$(INSTALLDIR)/sdparm-1.02
