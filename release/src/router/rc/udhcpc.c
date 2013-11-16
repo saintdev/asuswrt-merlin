@@ -660,8 +660,21 @@ int dhcp6c_state_main(int argc, char **argv)
 	if (argv[1]) nvram_set("ipv6_gw_addr", argv[1]);
 
 	if (nvram_get_int("ipv6_dhcp_pd")) {
-		p = ipv6_prefix(NULL);
-		if (*p) nvram_set("ipv6_prefix", p);
+		if ((p = getenv("new_iapd_prefix"))) {
+			char *prefixlen;
+
+			TRACE_PT("new_iapd_prefix=%s\n", p);
+			if ((prefixlen = strrchr(p, '/'))) {
+				*prefixlen = '\0';
+				prefixlen++;
+				nvram_set("ipv6_prefix", p);
+				nvram_set("ipv6_prefix_length", trim_r(prefixlen));
+			}
+		} else {
+			/* Guess prefix from lan address if we are not given one */
+			p = ipv6_prefix(NULL);
+			if (*p) nvram_set("ipv6_prefix", p);
+		}
 	}
 
 	if (env2nv("new_domain_name_servers", "ipv6_get_dns")) {
@@ -671,9 +684,6 @@ int dhcp6c_state_main(int argc, char **argv)
 
 	if (env2nv("new_domain_name", "ipv6_get_domain"))
 		TRACE_PT("ipv6_get_domain=%s\n", nvram_safe_get("ipv6_get_domain"));
-	
-	if ((p = (const char*)getenv("new_iapd_prefix")))
-		syslog(LOG_INFO, "IA_PD prefix: %s\n", p);
 
 	// (re)start radvd and httpd
 	start_radvd();
